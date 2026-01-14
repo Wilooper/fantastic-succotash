@@ -28,7 +28,22 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json()
 
-    return NextResponse.json(data)
+    if (data.status === "success" && data.data) {
+      return NextResponse.json({
+        status: "success",
+        data: data.data,
+      })
+    }
+
+    // If response doesn't have expected structure, still try to return it
+    if (data.timed_lyrics || data.lyrics) {
+      return NextResponse.json({
+        status: "success",
+        data: data,
+      })
+    }
+
+    return NextResponse.json({ error: "Invalid response format from Lyrica API" }, { status: 400 })
   } catch (error) {
     console.error("[v0] Lyrics API error:", error)
     return NextResponse.json({ error: "Failed to fetch lyrics. The service may be unavailable." }, { status: 500 })

@@ -36,14 +36,34 @@ export default function PlayerPageContent() {
 
       const data = await response.json()
 
-      if (data.lyrics) {
-        setLyrics(data.lyrics)
-        setArtist(artistName)
-        setSong(songName)
-        setHasTimestamps(true)
+      if (data.status === "success" && data.data) {
+        const lyricsData = data.data
+        if (lyricsData.timed_lyrics && Array.isArray(lyricsData.timed_lyrics)) {
+          setLyrics(lyricsData.timed_lyrics)
+          setHasTimestamps(true)
+        } else if (lyricsData.lyrics) {
+          setLyrics(lyricsData.lyrics)
+          setHasTimestamps(false)
+        } else {
+          throw new Error("No lyrics found in response")
+        }
+      } else if (data.timed_lyrics || data.lyrics) {
+        // Direct response without status wrapper
+        if (data.timed_lyrics && Array.isArray(data.timed_lyrics)) {
+          setLyrics(data.timed_lyrics)
+          setHasTimestamps(true)
+        } else if (data.lyrics) {
+          setLyrics(data.lyrics)
+          setHasTimestamps(false)
+        } else {
+          throw new Error("No lyrics found in response")
+        }
       } else {
-        setError("No lyrics found for this song.")
+        throw new Error("Invalid response format from API")
       }
+
+      setArtist(artistName)
+      setSong(songName)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch lyrics. Please try again.")
       setLyrics(null)

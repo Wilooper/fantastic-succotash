@@ -1,9 +1,8 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect, useRef } from "react"
-import { Play, Pause, Volume2, Grid3x3, Download } from "lucide-react"
+import { Play, Pause, Grid3x3, Download } from "lucide-react"
 
 interface TimestampedLyric {
   timestamp?: string
@@ -24,7 +23,7 @@ export function LyricPlayer({ lyrics, artist, song, hasTimestamps, onDownload }:
   const [duration, setDuration] = useState(0)
   const [currentLyricIndex, setCurrentLyricIndex] = useState(0)
   const [showEqualizer, setShowEqualizer] = useState(true)
-  const [audioUrl, setAudioUrl] = useState<string>("")
+  const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -120,17 +119,14 @@ export function LyricPlayer({ lyrics, artist, song, hasTimestamps, onDownload }:
       ref={containerRef}
       className="relative min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden flex flex-col items-center justify-center p-6"
     >
-      {/* Background blur effect */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 to-transparent opacity-30 blur-3xl"></div>
 
       <div className="relative z-10 w-full max-w-2xl">
-        {/* Header */}
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-2">{song}</h2>
           <p className="text-lg text-slate-400">{artist}</p>
         </div>
 
-        {/* Lyrics Display */}
         <div className="min-h-80 bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-8 md:p-12 mb-8 flex items-center justify-center">
           {lyricsArray.length > 0 ? (
             <div className="text-center w-full">
@@ -147,7 +143,6 @@ export function LyricPlayer({ lyrics, artist, song, hasTimestamps, onDownload }:
           )}
         </div>
 
-        {/* Equalizer */}
         {showEqualizer && (
           <div className="flex items-end justify-center gap-2 h-20 mb-8">
             {[...Array(10)].map((_, i) => (
@@ -162,11 +157,9 @@ export function LyricPlayer({ lyrics, artist, song, hasTimestamps, onDownload }:
           </div>
         )}
 
-        {/* Audio Player */}
         <div className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 mb-6">
-          <audio ref={audioRef} src={audioUrl} className="hidden" crossOrigin="anonymous" />
+          {audioUrl && <audio ref={audioRef} src={audioUrl} className="hidden" crossOrigin="anonymous" />}
 
-          {/* Progress Bar */}
           <div className="mb-4">
             <input
               type="range"
@@ -182,7 +175,6 @@ export function LyricPlayer({ lyrics, artist, song, hasTimestamps, onDownload }:
             </div>
           </div>
 
-          {/* Controls */}
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <button
@@ -193,7 +185,7 @@ export function LyricPlayer({ lyrics, artist, song, hasTimestamps, onDownload }:
               </button>
 
               <label className="w-10 h-10 bg-slate-700 hover:bg-slate-600 text-white rounded-full flex items-center justify-center transition-colors cursor-pointer">
-                <Volume2 className="w-5 h-5" />
+                📁
                 <input type="file" accept="audio/*" onChange={handleFileUpload} className="hidden" />
               </label>
             </div>
@@ -208,7 +200,7 @@ export function LyricPlayer({ lyrics, artist, song, hasTimestamps, onDownload }:
 
               {onDownload && (
                 <button
-                  onClick={() => onDownload("mp3")}
+                  onClick={() => onDownload("txt")}
                   className="w-10 h-10 bg-slate-700 hover:bg-slate-600 text-white rounded-full flex items-center justify-center transition-colors"
                 >
                   <Download className="w-4 h-4" />
@@ -218,7 +210,6 @@ export function LyricPlayer({ lyrics, artist, song, hasTimestamps, onDownload }:
           </div>
         </div>
 
-        {/* Upload Audio Section */}
         <div className="text-center">
           <label className="inline-block px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors cursor-pointer">
             Upload Audio File

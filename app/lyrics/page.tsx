@@ -42,28 +42,25 @@ export default function LyricsPage() {
 
       const data = await response.json()
 
-      if (data.status === "success" && data.data) {
-        const lyricsData = data.data
-
-        // Check if we have timed lyrics (synced)
-        if (lyricsData.timed_lyrics && Array.isArray(lyricsData.timed_lyrics) && lyricsData.timed_lyrics.length > 0) {
-          setLyrics(lyricsData.timed_lyrics)
+      if (data && (data.timed_lyrics || data.lyrics)) {
+        if (data.timed_lyrics && Array.isArray(data.timed_lyrics) && data.timed_lyrics.length > 0) {
+          setLyrics(data.timed_lyrics)
           setHasTimestamps(true)
-        } else if (lyricsData.lyrics) {
-          // Fall back to plain text lyrics
-          setLyrics(lyricsData.lyrics)
+          setShowSynced(true)
+        } else if (data.lyrics) {
+          setLyrics(data.lyrics)
           setHasTimestamps(false)
+          setShowSynced(false)
         } else {
           throw new Error("No lyrics data found in response")
         }
 
         setArtist(artistName)
         setSong(songName)
-        setShowSynced(lyricsData.timed_lyrics && lyricsData.timed_lyrics.length > 0)
       } else if (data.error) {
-        throw new Error(data.error.message || data.error)
+        throw new Error(typeof data.error === "string" ? data.error : data.error.message || "Unknown error")
       } else {
-        throw new Error("Invalid response format from API")
+        throw new Error("No lyrics found. Try another song or artist.")
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch lyrics. Please try again.")
@@ -111,29 +108,32 @@ export default function LyricsPage() {
 
           {lyrics && (
             <div className="mt-12">
-              <div className="flex gap-4 mb-8">
-                <button
-                  onClick={() => setShowSynced(true)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                    showSynced
-                      ? "bg-primary/10 border border-primary/30 text-primary"
-                      : "bg-card border border-border text-foreground/70 hover:bg-card/80"
-                  }`}
-                >
-                  <Clock className="w-4 h-4" />
-                  <span>Synced</span>
-                </button>
-                <button
-                  onClick={() => setShowSynced(false)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                    !showSynced
-                      ? "bg-primary/10 border border-primary/30 text-primary"
-                      : "bg-card border border-border text-foreground/70 hover:bg-card/80"
-                  }`}
-                >
-                  <FileText className="w-4 h-4" />
-                  <span>Unsynced</span>
-                </button>
+              <div className="mb-8">
+                <h2 className="text-lg font-semibold mb-4">Lyrics Format</h2>
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => setShowSynced(true)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                      showSynced
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-card border border-border text-foreground/70 hover:bg-card/80"
+                    }`}
+                  >
+                    <Clock className="w-4 h-4" />
+                    <span>Synced</span>
+                  </button>
+                  <button
+                    onClick={() => setShowSynced(false)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                      !showSynced
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-card border border-border text-foreground/70 hover:bg-card/80"
+                    }`}
+                  >
+                    <FileText className="w-4 h-4" />
+                    <span>Unsynced</span>
+                  </button>
+                </div>
               </div>
 
               <LyricsDisplay
@@ -164,7 +164,10 @@ export default function LyricsPage() {
 
           {!lyrics && !error && (
             <div className="mt-12 text-center py-20">
-              <Music className="w-16 h-16 text-foreground/20 mx-auto mb-4" />
+              {/* Placeholder for Music component */}
+              <svg className="w-16 h-16 text-foreground/20 mx-auto mb-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 3v9.28c-.47-.46-1.12-.75-1.84-.75-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V7h4V3h-5z" />
+              </svg>
               <h3 className="text-2xl font-semibold mb-2">Search for a song</h3>
               <p className="text-foreground/60">Enter an artist name and song title to get started</p>
             </div>
@@ -187,13 +190,5 @@ export default function LyricsPage() {
 
       <Footer />
     </div>
-  )
-}
-
-function Music({ className }: { className: string }) {
-  return (
-    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-      <path d="M12 3v9.28c-.47-.46-1.12-.75-1.84-.75-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V7h4V3h-5z" />
-    </svg>
   )
 }
