@@ -30,10 +30,10 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                href="/lyrics"
+                href="/player"
                 className="px-8 py-4 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-semibold text-lg"
               >
-                Start Exploring
+                Premium Player
               </Link>
               <Link
                 href="/about"
