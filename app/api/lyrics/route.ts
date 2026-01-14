@@ -11,27 +11,22 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    console.log("[v0] Fetching lyrics for:", artist, song)
-
     const response = await fetch(
       `https://test-0k.onrender.com/lyrics/?artist=${encodeURIComponent(artist)}&song=${encodeURIComponent(song)}&timestamps=${timestamps}`,
       {
         method: "GET",
         headers: {
           Accept: "application/json",
+          "User-Agent": "Lyrica-App/1.0",
         },
       },
     )
 
-    console.log("[v0] API response status:", response.status)
-
     if (!response.ok) {
-      console.log("[v0] API error response:", response.statusText)
       return NextResponse.json({ error: "Lyrics not found. Try another song or artist." }, { status: response.status })
     }
 
     const data = await response.json()
-    console.log("[v0] Successfully fetched lyrics")
 
     return NextResponse.json(data)
   } catch (error) {

@@ -42,14 +42,28 @@ export default function LyricsPage() {
 
       const data = await response.json()
 
-      if (data.lyrics) {
-        setLyrics(data.lyrics)
+      if (data.status === "success" && data.data) {
+        const lyricsData = data.data
+
+        // Check if we have timed lyrics (synced)
+        if (lyricsData.timed_lyrics && Array.isArray(lyricsData.timed_lyrics) && lyricsData.timed_lyrics.length > 0) {
+          setLyrics(lyricsData.timed_lyrics)
+          setHasTimestamps(true)
+        } else if (lyricsData.lyrics) {
+          // Fall back to plain text lyrics
+          setLyrics(lyricsData.lyrics)
+          setHasTimestamps(false)
+        } else {
+          throw new Error("No lyrics data found in response")
+        }
+
         setArtist(artistName)
         setSong(songName)
-        setHasTimestamps(true)
-        setShowSynced(true)
+        setShowSynced(lyricsData.timed_lyrics && lyricsData.timed_lyrics.length > 0)
+      } else if (data.error) {
+        throw new Error(data.error.message || data.error)
       } else {
-        setError("No lyrics found for this song.")
+        throw new Error("Invalid response format from API")
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch lyrics. Please try again.")
@@ -67,7 +81,8 @@ export default function LyricsPage() {
     }
 
     if (!showSynced && Array.isArray(lyrics)) {
-      return lyrics.map((l) => l.text).join("\n")
+      // Convert timed lyrics to plain text
+      return lyrics.map((l: any) => (typeof l === "string" ? l : l.text)).join("\n")
     }
 
     return lyrics
